@@ -1,11 +1,12 @@
 --
--- Structure de la table `task`
+-- Structure de la table `tasks`
 --
-CREATE TABLE IF NOT EXISTS task (
+CREATE TABLE IF NOT EXISTS tasks (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    description VARCHAR(255) NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'TODO',
     is_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-    status VARCHAR(50) NOT NULL DEFAULT 'TODO',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
