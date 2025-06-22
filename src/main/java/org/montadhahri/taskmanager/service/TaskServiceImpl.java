@@ -1,7 +1,6 @@
 package org.montadhahri.taskmanager.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.montadhahri.taskmanager.dto.request.TaskRequestDto;
 import org.montadhahri.taskmanager.dto.response.TaskResponseDto;
@@ -10,15 +9,17 @@ import org.montadhahri.taskmanager.entity.Task;
 import org.montadhahri.taskmanager.exception.DuplicateResourceException;
 import org.montadhahri.taskmanager.exception.ResourceNotFoundException;
 import org.montadhahri.taskmanager.repository.TaskRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
+    private static final Logger log = LoggerFactory.getLogger(TaskServiceImpl.class);
 
     private final TaskRepository taskRepository;
     private final ModelMapper modelMapper;
