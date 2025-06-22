@@ -16,6 +16,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<org.modelmapper.version>3.1.0</org.modelmapper.version>
+		<org.springdoc.springdoc-openapi.version>2.0.2</org.springdoc.springdoc-openapi.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -51,6 +52,7 @@
 		<dependency>
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>
+			<version>3.0.2</version>
 		</dependency>
 
 		<dependency>
@@ -60,15 +62,15 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${org.springdoc.springdoc-openapi.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 

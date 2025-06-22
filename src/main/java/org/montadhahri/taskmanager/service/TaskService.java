@@ -3,6 +3,7 @@ package org.montadhahri.taskmanager.service;
 import org.montadhahri.taskmanager.dto.request.TaskRequestDto;
 import org.montadhahri.taskmanager.dto.response.TaskResponseDto;
 import org.montadhahri.taskmanager.enumeration.TaskStatus;
+import org.montadhahri.taskmanager.exception.DuplicateResourceException;
 
 import java.util.List;
 
@@ -35,6 +36,7 @@ public interface TaskService {
      * Creates a new task.
      * @param taskRequestDto task request DTO
      * @return created task response DTO
+     * @exception DuplicateResourceException: Task title already exists
      */
     TaskResponseDto createTask(TaskRequestDto taskRequestDto);
 
