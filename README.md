@@ -66,15 +66,15 @@ mvn spring-boot:run
 
 Base URL: `http://localhost:8080/api`
 
-| Method | Endpoint                    | Description                      |
-|--------|-----------------------------|----------------------------------|
-| POST   | `/tasks`                    | Create a new task                |
-| GET    | `/tasks`                    | Get all tasks                    |
-| GET    | `/tasks?status=TODO`        | Get tasks filtered by status     |
-| GET    | `/tasks/{id}`               | Get task by ID                   |
-| PUT    | `/tasks/{id}`               | Update task title/description    |
-| PATCH  | `/tasks/{id}/status`        | Update only task status          |
-| DELETE | `/tasks/{id}`               | Soft delete task                 |
+| Method | Endpoint                   | Description                   |
+|--------|----------------------------|-------------------------------|
+| POST   | `/tasks`                   | Create a new task             |
+| GET    | `/tasks?page=1&offset=10` | Get all paginated tasks       |
+| GET    | `/tasks?status=TODO`       | Get tasks filtered by status  |
+| GET    | `/tasks/{id}`              | Get task by ID                |
+| PUT    | `/tasks/{id}`              | Update task title/description |
+| PATCH  | `/tasks/{id}/status`       | Update only task status       |
+| DELETE | `/tasks/{id}`              | Soft delete task              |
 
 ---
 
