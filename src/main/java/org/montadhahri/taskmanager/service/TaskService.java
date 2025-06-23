@@ -7,8 +7,6 @@ import org.montadhahri.taskmanager.dto.response.TaskResponseDto;
 import org.montadhahri.taskmanager.enumeration.TaskStatus;
 import org.montadhahri.taskmanager.exception.DuplicateResourceException;
 
-import java.util.List;
-
 /**
  * Handle Task business operations
  * @author mdh
