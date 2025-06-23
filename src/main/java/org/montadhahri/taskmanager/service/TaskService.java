@@ -1,5 +1,7 @@
 package org.montadhahri.taskmanager.service;
 
+import jakarta.annotation.Nullable;
+import org.montadhahri.taskmanager.dto.PageDto;
 import org.montadhahri.taskmanager.dto.request.TaskRequestDto;
 import org.montadhahri.taskmanager.dto.response.TaskResponseDto;
 import org.montadhahri.taskmanager.enumeration.TaskStatus;
@@ -15,9 +17,9 @@ public interface TaskService {
 
     /**
      * get all active tasks.
-     * @return list of tasks
+     * @return page of tasks
      */
-    List<TaskResponseDto> getAllTasks();
+    PageDto<TaskResponseDto> getAllTasks(Integer pageIndex, Integer offset, @Nullable TaskStatus status);
 
     /**
      * Get a task by ID.
@@ -25,12 +27,6 @@ public interface TaskService {
      * @return task DTO
      */
     TaskResponseDto getTaskById(Long id);
-
-    /**
-     * get all active tasks by Status.
-     * @return list of tasks
-     */
-    List<TaskResponseDto> getTasksByStatus(TaskStatus status);
 
     /**
      * Creates a new task.

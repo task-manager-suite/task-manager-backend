@@ -1,11 +1,13 @@
 package org.montadhahri.taskmanager.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.montadhahri.taskmanager.dto.PageDto;
 import org.montadhahri.taskmanager.dto.request.TaskRequestDto;
 import org.montadhahri.taskmanager.dto.request.TaskStatusUpdateDto;
 import org.montadhahri.taskmanager.dto.response.TaskResponseDto;
@@ -15,8 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "tasks", description = "Task management APIs")
 @RestController
@@ -40,12 +40,13 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @Operation(summary = "Get All tasks")
+    @Operation(summary = "Get All paginated tasks")
     @GetMapping
-    public ResponseEntity<List<TaskResponseDto>> getAllTasks(@RequestParam(required = false) TaskStatus status) {
-        List<TaskResponseDto> tasks = (status == null)
-                ? taskService.getAllTasks()
-                : taskService.getTasksByStatus(status);
+    public ResponseEntity<PageDto<TaskResponseDto>> getAllTasks(
+            @Parameter(description = "Page index greater than 0") @RequestParam(name = "page") Integer page,
+            @Parameter(description = "Page size") @RequestParam(name = "offset") Integer offset,
+            @Parameter(description = "Status", required = false) @RequestParam(required = false) TaskStatus status) {
+        PageDto<TaskResponseDto> tasks = taskService.getAllTasks(page, offset, status);
         return ResponseEntity.ok(tasks);
     }
 

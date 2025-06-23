@@ -1,16 +1,23 @@
 package org.montadhahri.taskmanager.service;
 
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.montadhahri.taskmanager.dto.PageDto;
 import org.montadhahri.taskmanager.dto.request.TaskRequestDto;
 import org.montadhahri.taskmanager.dto.response.TaskResponseDto;
 import org.montadhahri.taskmanager.enumeration.TaskStatus;
 import org.montadhahri.taskmanager.entity.Task;
+import org.montadhahri.taskmanager.exception.BadRequestException;
 import org.montadhahri.taskmanager.exception.DuplicateResourceException;
 import org.montadhahri.taskmanager.exception.ResourceNotFoundException;
 import org.montadhahri.taskmanager.repository.TaskRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,19 +94,26 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TaskResponseDto> getAllTasks() {
-        log.info("Find all tasks");
-        return taskRepository.findByIsEnabledTrue().stream()
-                .map(t -> modelMapper.map(t, TaskResponseDto.class))
-                .toList();
-    }
+    public PageDto<TaskResponseDto> getAllTasks(Integer pageIndex, Integer offset, @Nullable TaskStatus status) {
+        log.info("Fetching tasks with status={} and pageIndex={}, offset={}", status, pageIndex, offset);
+        if (pageIndex == null || pageIndex <= 0) {
+            throw new BadRequestException("pageIndex must be greater than or equal to 1");
+        }
+        if (offset == null || offset <= 0) {
+            throw new BadRequestException("offset must be greater than 0");
+        }
+        Pageable pageable = PageRequest.of(pageIndex - 1, offset, Sort.by("createdAt").ascending());
+        Page<Task> tasksPage = (status != null)
+                ? taskRepository.findByStatusAndIsEnabledTrue(status, pageable)
+                : taskRepository.findByIsEnabledTrue(pageable);
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<TaskResponseDto> getTasksByStatus(TaskStatus status) {
-        return taskRepository.findByStatusAndIsEnabledTrue(status).stream()
-                .map(t -> modelMapper.map(t, TaskResponseDto.class))
-                .toList();
+        PageDto<TaskResponseDto> pageDto = new PageDto<>();
+        pageDto.setItems(tasksPage.getContent().stream()
+                .map(task -> modelMapper.map(task, TaskResponseDto.class))
+                .toList());
+        pageDto.setCount(tasksPage.getTotalElements());
+
+        return pageDto;
     }
 
     @Override

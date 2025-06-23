@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.montadhahri.taskmanager.dto.PageDto;
 import org.montadhahri.taskmanager.dto.request.TaskRequestDto;
 import org.montadhahri.taskmanager.dto.request.TaskStatusUpdateDto;
 import org.montadhahri.taskmanager.dto.response.TaskResponseDto;
@@ -58,28 +59,6 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.title").value("Test Task"));
 
         verify(taskService).createTask(any(TaskRequestDto.class));
-    }
-
-    @Test
-    void getAllTasks_withoutStatus_returnsList() throws Exception {
-        when(taskService.getAllTasks()).thenReturn(List.of(responseDto));
-
-        mockMvc.perform(get("/tasks"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Test Task"));
-
-        verify(taskService).getAllTasks();
-    }
-
-    @Test
-    void getAllTasks_withStatus_returnsFilteredList() throws Exception {
-        when(taskService.getTasksByStatus(TaskStatus.TODO)).thenReturn(List.of(responseDto));
-
-        mockMvc.perform(get("/tasks").param("status", "TODO"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].status").value("TODO"));
-
-        verify(taskService).getTasksByStatus(TaskStatus.TODO);
     }
 
     @Test
@@ -137,5 +116,48 @@ class TaskControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(taskService).softDeleteTask(1L);
+    }
+
+    @Test
+    void getAllTasks_withStatus_returnsPageDto() throws Exception {
+
+        PageDto<TaskResponseDto> pageDto = new PageDto<>();
+        pageDto.setItems(List.of(responseDto));
+        pageDto.setCount(1L);
+
+        when(taskService.getAllTasks(1, 10, TaskStatus.TODO)).thenReturn(pageDto);
+
+        mockMvc.perform(get("/tasks")
+                        .param("page", "1")
+                        .param("offset", "10")
+                        .param("status", "TODO")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1))
+                .andExpect(jsonPath("$.items[0].status").value("TODO"))
+                .andExpect(jsonPath("$.items[0].id").value(1));
+
+        verify(taskService, times(1)).getAllTasks(1, 10, TaskStatus.TODO);
+    }
+
+    @Test
+    void getAllTasks_withoutStatus_returnsPageDto() throws Exception {
+
+        PageDto<TaskResponseDto> pageDto = new PageDto<>();
+        pageDto.setItems(List.of(responseDto));
+        pageDto.setCount(1L);
+
+        when(taskService.getAllTasks(2, 5, null)).thenReturn(pageDto);
+
+        mockMvc.perform(get("/tasks")
+                        .param("page", "2")
+                        .param("offset", "5")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1))
+                .andExpect(jsonPath("$.items[0].status").value("TODO"))
+                .andExpect(jsonPath("$.items[0].id").value(1));
+
+        verify(taskService, times(1)).getAllTasks(2, 5, null);
     }
 }

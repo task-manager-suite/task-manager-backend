@@ -10,13 +10,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.montadhahri.taskmanager.dto.PageDto;
 import org.montadhahri.taskmanager.dto.request.TaskRequestDto;
 import org.montadhahri.taskmanager.dto.response.TaskResponseDto;
 import org.montadhahri.taskmanager.entity.Task;
 import org.montadhahri.taskmanager.enumeration.TaskStatus;
+import org.montadhahri.taskmanager.exception.BadRequestException;
 import org.montadhahri.taskmanager.exception.DuplicateResourceException;
 import org.montadhahri.taskmanager.exception.ResourceNotFoundException;
 import org.montadhahri.taskmanager.repository.TaskRepository;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -207,32 +210,6 @@ class TaskServiceImplTest {
     }
 
     @Test
-    void getAllTasks_returnsList() {
-        when(taskRepository.findByIsEnabledTrue()).thenReturn(List.of(taskEntity));
-        when(modelMapper.map(taskEntity, TaskResponseDto.class)).thenReturn(responseDto);
-
-        List<TaskResponseDto> results = taskService.getAllTasks();
-
-        assertNotNull(results);
-        assertEquals(1, results.size());
-        assertEquals(taskEntity.getTitle(), results.getFirst().getTitle());
-    }
-
-    @Test
-    void getTasksByStatus_returnsFilteredList() {
-        TaskStatus status = TaskStatus.TODO;
-
-        when(taskRepository.findByStatusAndIsEnabledTrue(status)).thenReturn(List.of(taskEntity));
-        when(modelMapper.map(taskEntity, TaskResponseDto.class)).thenReturn(responseDto);
-
-        List<TaskResponseDto> results = taskService.getTasksByStatus(status);
-
-        assertNotNull(results);
-        assertEquals(1, results.size());
-        assertEquals(status, results.getFirst().getStatus());
-    }
-
-    @Test
     void getTaskById_success() {
         Long id = 1L;
 
@@ -256,5 +233,93 @@ class TaskServiceImplTest {
         });
 
         assertTrue(exception.getMessage().contains("Task not found"));
+    }
+
+    @Test
+    void testGetAllTasksWithoutStatus_returnsPageDto() {
+        int pageIndex = 1;
+        int offset = 2;
+
+        Task task1 = new Task();
+        task1.setId(1L);
+        task1.setStatus(TaskStatus.TODO);
+
+        Task task2 = new Task();
+        task2.setId(2L);
+        task2.setStatus(TaskStatus.DONE);
+
+        TaskResponseDto dto1 = new TaskResponseDto();
+        dto1.setId(1L);
+        dto1.setStatus(TaskStatus.TODO);
+
+        TaskResponseDto dto2 = new TaskResponseDto();
+        dto2.setId(2L);
+        dto2.setStatus(TaskStatus.DONE);
+
+        Pageable pageable = PageRequest.of(0, offset, Sort.by("createdAt").ascending());
+        Page<Task> mockPage = new PageImpl<>(List.of(task1, task2), pageable, 2);
+
+        when(taskRepository.findByIsEnabledTrue(pageable)).thenReturn(mockPage);
+        when(modelMapper.map(task1, TaskResponseDto.class)).thenReturn(dto1);
+        when(modelMapper.map(task2, TaskResponseDto.class)).thenReturn(dto2);
+
+        PageDto<TaskResponseDto> result = taskService.getAllTasks(pageIndex, offset, null);
+
+        assertNotNull(result);
+        assertEquals(2, result.getItems().size());
+        assertEquals(2, result.getCount());
+        assertEquals(dto1, result.getItems().get(0));
+        assertEquals(dto2, result.getItems().get(1));
+
+        verify(taskRepository, times(1)).findByIsEnabledTrue(pageable);
+        verify(taskRepository, never()).findByStatusAndIsEnabledTrue(any(), any());
+    }
+
+    @Test
+    void testGetAllTasksWithStatus_returnsPageDto() {
+        int pageIndex = 1;
+        int offset = 1;
+        TaskStatus status = TaskStatus.TODO;
+
+
+        Task task1 = new Task();
+        task1.setId(1L);
+        task1.setStatus(TaskStatus.TODO);
+
+        TaskResponseDto dto1 = new TaskResponseDto();
+        dto1.setId(1L);
+        dto1.setStatus(TaskStatus.TODO);
+
+        Pageable pageable = PageRequest.of(0, offset, Sort.by("createdAt").ascending());
+        Page<Task> mockPage = new PageImpl<>(List.of(task1), pageable, 1);
+
+        when(taskRepository.findByStatusAndIsEnabledTrue(status, pageable)).thenReturn(mockPage);
+        when(modelMapper.map(task1, TaskResponseDto.class)).thenReturn(dto1);
+
+        PageDto<TaskResponseDto> result = taskService.getAllTasks(pageIndex, offset, status);
+
+        assertNotNull(result);
+        assertEquals(1, result.getItems().size());
+        assertEquals(1, result.getCount());
+        assertEquals(dto1, result.getItems().getFirst());
+
+        verify(taskRepository, times(1)).findByStatusAndIsEnabledTrue(status, pageable);
+        verify(taskRepository, never()).findByIsEnabledTrue(any());
+    }
+
+    @Test
+    void testGetAllTasks_invalidPageIndex_throwsException() {
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> {
+            taskService.getAllTasks(0, 10, null);
+        });
+        assertEquals("pageIndex must be greater than or equal to 1", ex.getMessage());
+    }
+
+    @Test
+    void testGetAllTasks_invalidOffset_throwsException() {
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> {
+            taskService.getAllTasks(1, 0, null);
+        });
+        assertEquals("offset must be greater than 0", ex.getMessage());
     }
 }

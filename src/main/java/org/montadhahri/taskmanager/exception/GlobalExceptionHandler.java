@@ -61,6 +61,16 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles BadRequestException.
+     * Returns 400 Conflict
+     */
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiErrorDto> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
+        ApiErrorDto error = createApiError(request, HttpStatus.BAD_REQUEST, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    /**
      * Handles validation failures on @RequestBody Dtos.
      * Returns 400 Bad Request
      */
