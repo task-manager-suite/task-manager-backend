@@ -146,6 +146,13 @@ src
 
 ---
 
+## 🧠 Ideas & Improvements
+
+Several potential enhancements (security, user management, etc.) are listed in the [Issues section](https://github.com/task-manager-suite/task-manager-backend/issues).  
+These represent additional ideas beyond the challenge scope, but aligned with best practices and future extensibility.
+
+---
+
 ## 📌 Author
 
 **Montassar Dhahri**  
